@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>币奇堡DIY手作室</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Microsoft YaHei",Arial,sans-serif;background:#f7f8fa;padding:15px;max-width:700px;margin:0 auto;color:#333}
+.card{background:#fff;border-radius:12px;padding:16px;margin:0 0 14px;box-shadow:0 2px 6px rgba(0,0,0,0.04)}
+.title{font-size:17px;font-weight:bold;margin:16px 0 10px}
+.tip{text-align:center;color:#888;font-size:14px;margin:8px 0}
+.warning{color:#ff4d4f;font-size:14px;background:#fff1f0;padding:8px 12px;border-radius:6px;margin:10px 0}
+input,select,button{width:100%;padding:12px;border-radius:8px;border:1px solid #ddd;margin:8px 0;font-size:15px}
+button{background:#007AFF;color:white;border:none}
+.seat{display:inline-block;width:46px;height:46px;line-height:46px;text-align:center;border-radius:6px;margin:3px;font-size:14px}
+.free{background:#E3F2FD;border:1px solid #2196F3}
+.waiting{background:#FFF8E1;border:1px solid #FFC107}
+.done{background:#E8F5E9;border:1px solid #4CAF50}
+.area{margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #eee}
+.img-box img{width:100%;border-radius:8px;margin:8px 0}
+#admin{display:none}
+.item{padding:10px;border-bottom:1px solid #eee}
+#admin_entry{position:fixed;bottom:10px;right:10px;width:30px;height:30px;opacity:0.2}
+</style>
+</head>
+<body>
+
+<div class="card">
+  <h1 style="text-align:center; font-size:22px; margin-bottom:8px">币奇堡DIY手作室</h1>
+  <p class="tip">
+    本页面为店内自制简易预约页面，功能可能存在不稳定情况，如遇异常敬请谅解！
+  </p>
+
+  <div class="title">全场示意图</div>
+  <div class="img-box">
+    <img src="https://picsum.photos/600/300?random=1" alt="全场总图">
+  </div>
+
+  <div class="title">分区实景</div>
+
+  <div style="margin-bottom:12px">
+    <h3>A区 · 大厅桌</h3>
+    <div class="img-box">
+      <img src="https://picsum.photos/600/300?random=2">
+    </div>
+  </div>
+
+  <div style="margin-bottom:12px">
+    <h3>B区 · 大厅连排座</h3>
+    <div class="img-box">
+      <img src="https://picsum.photos/600/300?random=3">
+    </div>
+  </div>
+
+  <div style="margin-bottom:12px">
+    <h3>C区 · 菠萝屋</h3>
+    <div class="img-box">
+      <img src="https://picsum.photos/600/300?random=4">
+    </div>
+  </div>
+
+  <div style="margin-bottom:12px">
+    <h3>D区 · 石像屋</h3>
+    <div class="img-box">
+      <img src="https://picsum.photos/600/300?random=5">
+    </div>
+  </div>
+
+  <div class="title">座位区域</div>
+  <div class="area">
+    <h3>A区 · 大厅桌（8座）</h3>
+    <div id="areaA"></div>
+  </div>
+  <div class="area">
+    <h3>B区 · 大厅连排座（12座）</h3>
+    <div id="areaB"></div>
+  </div>
+  <div class="area">
+    <h3>C区 · 菠萝屋（8座）</h3>
+    <div id="areaC"></div>
+  </div>
+  <div class="area">
+    <h3>D区 · 石像屋（6座）</h3>
+    <div id="areaD"></div>
+  </div>
+
+  <div class="warning">
+    ⚠️ 预约规则：迟到30分钟将自动取消预约
+  </div>
+
+  <div class="title">查询预约结果</div>
+  <input id="q_phone" placeholder="输入手机号查询">
+  <button onclick="queryResult()">查询</button>
+  <div id="query_result" class="tip" style="text-align:left"></div>
+
+  <div class="title">我要预约</div>
+  <input id="uname" placeholder="你希望我们称呼你什么">
+  <input id="uphone" placeholder="手机号">
+  <select id="uroom">
+    <option value="A">A区 · 大厅桌</option>
+    <option value="B">B区 · 大厅连排座</option>
+    <option value="C">C区 · 菠萝屋</option>
+    <option value="D">D区 · 石像屋</option>
+  </select>
+
+  <select id="utime">
+    <option value="">选择到店时间</option>
+    <option value="10:00">10:00</option>
+    <option value="10:30">10:30</option>
+    <option value="11:00">11:00</option>
+    <option value="11:30">11:30</option>
+    <option value="12:00">12:00</option>
+    <option value="12:30">12:30</option>
+    <option value="13:00">13:00</option>
+    <option value="13:30">13:30</option>
+    <option value="14:00">14:00</option>
+    <option value="14:30">14:30</option>
+    <option value="15:00">15:00</option>
+    <option value="15:30">15:30</option>
+    <option value="16:00">16:00</option>
+    <option value="16:30">16:30</option>
+    <option value="17:00">17:00</option>
+    <option value="17:30">17:30</option>
+    <option value="18:00">18:00</option>
+    <option value="18:30">18:30</option>
+    <option value="19:00">19:00</option>
+    <option value="19:30">19:30</option>
+    <option value="20:00">20:00</option>
+  </select>
+
+  <select id="uhour">
+    <option value="">预约时长</option>
+    <option value="1">1小时</option>
+    <option value="2">2小时</option>
+    <option value="3">3小时</option>
+    <option value="4">4小时</option>
+    <option value="5">5小时</option>
+    <option value="6">6小时</option>
+    <option value="7">7小时</option>
+    <option value="8">8小时</option>
+    <option value="9">9小时</option>
+    <option value="10">10小时</option>
+    <option value="11">全天（11小时）</option>
+  </select>
+
+  <button onclick="submitBook()">提交预约</button>
+</div>
+
+<div id="admin" class="card">
+  <h3>管理后台 · 审核</h3>
+  <div id="admin_list"></div>
+</div>
+
+<!-- 管理员入口：右下角小方块 -->
+<div id="admin_entry" onclick="showAdmin()"></div>
+
+<script>
+const ADMIN_PWD = "123456";
+const areas = {A:8, B:12, C:8, D:6};
+let list = JSON.parse(localStorage.getItem("book_list") || "[]");
+
+// 管理员入口
+function showAdmin(){
+  let p = prompt("请输入管理密码");
+  if(p === ADMIN_PWD){
+    document.getElementById("admin").style.display = "block";
+    renderAdmin();
+  }
+}
+
+// 渲染座位（字母+数字，不重复）
+function renderSeats(){
+  for(let k in areas){
+    let html = "";
+    for(let i=1; i<=areas[k]; i++){
+      let code = k + i;
+      let item = list.find(x => x.seat === code);
+      let cls = "free";
+      if(item){
+        if(item.status === "待审核") cls = "waiting";
+        if(item.status === "通过") cls = "done";
+      }
+      html += `<div class="seat ${cls}">${code}</div>`;
+    }
+    document.getElementById("area"+k).innerHTML = html;
+  }
+}
+
+// 提交预约
+function submitBook(){
+  let name = document.getElementById("uname").value.trim();
+  let phone = document.getElementById("uphone").value.trim();
+  let room = document.getElementById("uroom").value;
+  let utime = document.getElementById("utime").value;
+  let uhour = document.getElementById("uhour").value;
+
+  if(!name || !phone || !room || !utime || !uhour){
+    alert("请填写完整信息");
+    return;
+  }
+
+  if(list.some(x => x.phone === phone)){
+    alert("该手机号已预约，请勿重复提交");
+    return;
+  }
+
+  list.push({
+    name, phone, room, utime, uhour,
+    status:"待审核",
+    time:new Date().toLocaleString()
+  });
+
+  localStorage.setItem("book_list", JSON.stringify(list));
+  alert("预约提交成功，请等待审核");
+  renderAll();
+}
+
+// 查询
+function queryResult(){
+  let phone = document.getElementById("q_phone").value.trim();
+  let item = list.find(x => x.phone === phone);
+  let dom = document.getElementById("query_result");
+  if(!item){
+    dom.innerText = "未找到该预约";
+    return;
+  }
+  let showLen = item.uhour == 11 ? "全天" : item.uhour+"小时";
+  dom.innerText = `状态：${item.status} | 到店：${item.utime} | 时长：${showLen}`;
+}
+
+// 后台
+function renderAdmin(){
+  let dom = document.getElementById("admin_list");
+  if(list.length === 0) { dom.innerHTML = "暂无预约"; return; }
+  let html = "";
+  list.forEach((it, idx) => {
+    let showLen = it.uhour == 11 ? "全天" : it.uhour+"小时";
+    html += `
+    <div class="item">
+      <div>${it.name} | ${it.phone}</div>
+      <div>${it.room}区 | ${it.utime} | ${showLen}</div>
+      <div>状态：${it.status} | ${it.time}</div>
+      <div style="margin-top:6px">
+        <button onclick="setPass(${idx})" style="width:auto;padding:6px;background:#07C160">通过</button>
+        <button onclick="setReject(${idx})" style="width:auto;padding:6px;background:#ff4444">拒绝</button>
+      </div>
+    </div>`;
+  });
+  dom.innerHTML = html;
+}
+
+function setPass(idx){list[idx].status="通过";save();}
+function setReject(idx){list[idx].status="拒绝";save();}
+function save(){localStorage.setItem("book_list",JSON.stringify(list));renderAll();renderAdmin();}
+function renderAll(){renderSeats();}
+
+renderAll();
+</script>
+</body>
+</html>
