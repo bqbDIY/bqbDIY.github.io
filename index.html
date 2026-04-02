@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html charset="UTF-8">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>币奇堡 DIY 手作室预约</title>
+<style>
+* { box-sizing: border-box; font-family: sans-serif; margin: 0; padding: 0; }
+body { background: #fff7fc; padding: 15px; }
+.title { text-align: center; color: #ff69b4; margin: 15px 0; }
+.tip { text-align: center; color: red; margin-bottom: 10px; }
+.map { height: 260px; background: #f3f3f3; margin: 20px 0; border-radius: 12px; }
+.zones { display: flex; gap: 8px; margin-bottom: 20px; }
+.zone-btn { flex:1; padding:10px; background:#ffb6c1; border:none; border-radius:10px; cursor:pointer; }
+.zone-btn.active { background:#ff69b4; color:#fff; }
+.page { display: none; }
+.page.active { display: block; }
+.page h2 { text-align: center; color: #ff69b4; margin: 10px 0; }
+.date-show { text-align: center; margin:10px 0; color:#ff69b4; font-weight:bold; }
+.date-edit { text-align: center; margin:10px 0; display:none; }
+.logout-btn { display: none; margin: 10px auto; padding: 8px 16px; background: red; color: white; border: none; border-radius: 8px; cursor: pointer; }
+.time-list { max-width: 600px; margin: 0 auto; }
+.seat-row { background:#fff; padding:10px; margin:6px 0; border-radius:8px; display:flex; gap:10px; }
+.seat-name { width:60px; font-weight:bold; }
+.time-slots { flex:1; display:flex; gap:2px; overflow-x:auto; }
+.time-slot { min-width:46px; padding:6px 0; background:#eee; border-radius:4px; text-align:center; font-size:11px; }
+.time-slot.booked { background:#ff69b4; color:#fff; }
+.admin-toggle { position:fixed; bottom:20px; right:20px; width:50px; height:50px; border-radius:50%; background:red; color:white; border:none; font-size:20px; cursor:pointer; }
+.admin-mask { position:fixed; inset:0; background:rgba(0,0,0,0.5); display:none; justify-content:center; align-items:center; }
+.admin-box { background:#fff; padding:25px; border-radius:12px; text-align:center; }
+.admin-box input { width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:8px; }
+.admin-box button { padding:10px 25px; background:#ff69b4; color:#fff; border:none; border-radius:8px; cursor:pointer; }
+</style>
+</head>
+<body>
+
+<div class="title">币奇堡 DIY 手作室预约</div>
+<div class="tip">🔴 红色时段 = 已预约</div>
+<img src="ditu.png" style="width:100%; height:auto; border-radius:12px;">
+
+<button class="logout-btn" id="logoutBtn" onclick="logoutAdmin()">退出管理员</button>
+
+<div class="zones">
+  <button class="zone-btn" onclick="showZone('hall1')">大厅桌</button>
+  <button class="zone-btn" onclick="showZone('hall2')">大厅联排</button>
+  <button class="zone-btn" onclick="showZone('stone')">石像屋</button>
+  <button class="zone-btn" onclick="showZone('pine')">菠萝屋</button>
+</div>
+
+<div id="hall1" class="page">
+  <h2>大厅桌（8座）</h2>
+  <div class="date-show" id="dateText">2026-04-02</div>
+  <div class="date-edit" id="dateEditArea">
+    <input type="text" id="newDate" placeholder="输入日期如 2026-04-02">
+    <button onclick="saveDate()">保存日期</button>
+  </div>
+  <div class="time-list" data-seats="8"></div>
+</div>
+
+<div id="hall2" class="page">
+  <h2>大厅联排（12座）</h2>
+  <div class="date-show" id="dateText">2026-04-02</div>
+  <div class="date-edit" id="dateEditArea">
+    <input type="text" id="newDate">
+    <button onclick="saveDate()">保存日期</button>
+  </div>
+  <div class="time-list" data-seats="12"></div>
+</div>
+
+<div id="stone" class="page">
+  <h2>石像屋（6座）</h2>
+  <div class="date-show" id="dateText">2026-04-02</div>
+  <div class="date-edit" id="dateEditArea">
+    <input type="text" id="newDate">
+    <button onclick="saveDate()">保存日期</button>
+  </div>
+  <div class="time-list" data-seats="6"></div>
+</div>
+
+<div id="pine" class="page">
+  <h2>菠萝屋（8座）</h2>
+  <div class="date-show" id="dateText">2026-04-02</div>
+  <div class="date-edit" id="dateEditArea">
+    <input type="text" id="newDate">
+    <button onclick="saveDate()">保存日期</button>
+  </div>
+  <div class="time-list" data-seats="8"></div>
+</div>
+
+<button class="admin-toggle" onclick="showAdmin()">🔐</button>
+
+<div class="admin-mask" id="adminMask">
+  <div class="admin-box">
+    <h3>管理员登录</h3>
+    <input type="password" id="adminPwd" placeholder="请输入密码">
+    <button onclick="loginAdmin()">进入</button>
+  </div>
+</div>
+
+<script>
+let isAdmin = false;
+let currentZone = 'hall1';
+
+function getBooking() {
+  return JSON.parse(localStorage.getItem('booking') || '{}');
+}
+
+function setBooking(obj) {
+  localStorage.setItem('booking', JSON.stringify(obj));
+}
+
+function getTimes() {
+  const arr = [];
+  for(let h=10; h<21; h++){
+    arr.push(`${h}:00-${h}:30`);
+    arr.push(`${h}:30-${h+1}:00`);
+  }
+  return arr;
+}
+
+// 只更新内容，不重置滚动条位置
+function render() {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(currentZone).classList.add('active');
+
+  const list = document.querySelector(`#${currentZone} .time-list`);
+  const seats = +list.dataset.seats;
+  const booking = getBooking();
+  const times = getTimes();
+  const prefix = { hall1: 'A', hall2: 'L', stone: 'S', pine: 'P' }[currentZone];
+
+  // 只更新内部，不重建整个结构 → 滚动条不跳
+  const rows = list.querySelectorAll('.seat-row');
+  if (rows.length === seats) {
+    rows.forEach((seatEl, sIdx) => {
+      const name = prefix + (sIdx + 1);
+      const slots = seatEl.querySelector('.time-slots');
+      const slotEls = slots.querySelectorAll('.time-slot');
+      slotEls.forEach((slotEl, i) => {
+        const key = `${currentZone}_${name}_${i}`;
+        slotEl.className = 'time-slot ' + (booking[key] ? 'booked' : '');
+      });
+    });
+    return;
+  }
+
+  // 第一次加载才重建
+  list.innerHTML = '';
+  for (let s=1; s<=seats; s++) {
+    const seat = document.createElement('div');
+    seat.className = 'seat-row';
+    const name = prefix + s;
+    seat.innerHTML = `<div class="seat-name">${name}</div><div class="time-slots"></div>`;
+    const slots = seat.querySelector('.time-slots');
+
+    times.forEach((t,i) => {
+      const key = `${currentZone}_${name}_${i}`;
+      const slot = document.createElement('div');
+      slot.className = 'time-slot ' + (booking[key] ? 'booked' : '');
+      slot.innerText = t.replace(':00-', ':00\n').replace(':30-', ':30\n');
+      slot.onclick = () => {
+        if (!isAdmin) return;
+        const b = getBooking();
+        b[key] = !b[key];
+        setBooking(b);
+        render();
+      };
+      slots.appendChild(slot);
+    });
+    list.appendChild(seat);
+  }
+}
+
+function showZone(zone) {
+  currentZone = zone;
+  render();
+  loadDate();
+}
+
+function loadDate() {
+  const d = localStorage.getItem('customDate');
+  if (d) document.querySelectorAll('#dateText').forEach(el => el.innerText = d);
+}
+
+function saveDate() {
+  const v = document.getElementById('newDate').value.trim();
+  if (!v) return;
+  localStorage.setItem('customDate', v);
+  document.querySelectorAll('#dateText').forEach(el => el.innerText = v);
+  alert('日期已保存');
+}
+
+function updateAdminUI() {
+  const show = isAdmin ? 'block' : 'none';
+  document.getElementById('logoutBtn').style.display = show;
+  document.querySelectorAll('#dateEditArea').forEach(el => el.style.display = show);
+}
+
+function showAdmin() {
+  document.getElementById('adminMask').style.display = 'flex';
+}
+
+function loginAdmin() {
+  if (document.getElementById('adminPwd').value === '0420') {
+    isAdmin = true;
+    document.getElementById('adminMask').style.display = 'none';
+    updateAdminUI();
+    alert('管理员已登录');
+  } else {
+    alert('密码错误');
+  }
+}
+
+function logoutAdmin() {
+  isAdmin = false;
+  updateAdminUI();
+  alert('已退出管理员');
+}
+
+loadDate();
+showZone('hall1');
+</script>
+</body>
+</html>
